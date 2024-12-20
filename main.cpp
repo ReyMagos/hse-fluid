@@ -26,6 +26,7 @@ cl::opt<std::string> vTypeArg("v-type",
 cl::opt<std::string> vFlowTypeArg("v-flow-type",
     cl::desc("Velocity flow type"), cl::value_desc("type"), cl::cat(TypeSelectionCategory));
 
+
 int main(int argc, char **argv) {
     cl::ParseCommandLineOptions(argc, argv);
 
@@ -36,6 +37,11 @@ int main(int argc, char **argv) {
 
     for (int i = 0; input.getline(field[i], M + 2) && i < N; ++i) {}
 
-    FluidSimulation<Fixed<int32_t, 16>, float, double, N, M> fluid(field);
-    fluid.render();
+    std::ofstream file_output;
+    file_output.open("output.txt", std::ios::trunc);
+
+    fluid::Simulation<Fixed<int32_t, 16>, Fixed<int32_t, 16>, Fixed<int32_t, 16>, N, M> simulation(field);
+    simulation.render(file_output);
+
+    file_output.close();
 }

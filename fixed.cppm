@@ -3,8 +3,6 @@ module;
 #include <cstdint>
 #include <ostream>
 
-#define TYPES float, double, Fixed<int32_t, 16>
-
 export module fixed;
 
 export template <typename intN_t, unsigned K>
@@ -26,7 +24,6 @@ struct Fixed {
     bool operator==(const Fixed&) const = default;
 
     Fixed operator+(const Fixed &other) const {
-        // TODO: Why don't just use constructor?
         return from_raw(v + other.v);
     }
 
@@ -69,114 +66,14 @@ struct Fixed {
         return x;
     }
 
-    operator float() const {
+    explicit operator float() const {
         return v / static_cast<float>(1 << K);
     }
 
-    operator double() const {
+    explicit operator double() const {
         return v / static_cast<double>(1 << K);
     }
 };
-
-
-template <typename T, typename... Types>
-concept is_one_of = std::disjunction_v<std::is_same<T, Types>...>;
-
-template <typename A, typename B>
-struct Add {
-    A a;
-    B b;
-    constexpr Add(A a, B b): a(a), b(b) {}
-
-    template <typename T>
-    operator T() const {
-        return static_cast<T>(a) + static_cast<T>(b);
-    }
-};
-
-export template <typename A, typename B>
-requires is_one_of<A, TYPES> && is_one_of<B, TYPES>
-Add<A, B> operator+(const A &a, const B &b) {
-    return Add<A, B>(a, b);
-}
-
-export template <typename A, typename B>
-requires is_one_of<A, TYPES> && is_one_of<B, TYPES>
-void operator+=(A &a, const B &b) {
-    a = a + b;
-}
-
-template <typename A, typename B>
-struct Subtract {
-    A a;
-    B b;
-    constexpr Subtract(A a, B b): a(a), b(b) {}
-
-    template <typename T>
-    operator T() const {
-        return static_cast<T>(a) - static_cast<T>(b);
-    }
-};
-
-export template <typename A, typename B>
-requires is_one_of<A, TYPES> && is_one_of<B, TYPES>
-Subtract<A, B> operator-(const A &a, const B &b) {
-    return Subtract<A, B>(a, b);
-}
-
-export template <typename A, typename B>
-requires is_one_of<A, TYPES> && is_one_of<B, TYPES>
-void operator-=(A &a, const B &b) {
-    a = a - b;
-}
-
-template <typename A, typename B>
-struct Multiply {
-    A a;
-    B b;
-    constexpr Multiply(A a, B b): a(a), b(b) {}
-
-    template <typename T>
-    operator T() const {
-        return static_cast<T>(a) * static_cast<T>(b);
-    }
-};
-
-export template <typename A, typename B>
-requires is_one_of<A, TYPES> && is_one_of<B, TYPES>
-Multiply<A, B> operator*(const A &a, const B &b) {
-    return Multiply<A, B>(a, b);
-}
-
-export template <typename A, typename B>
-requires is_one_of<A, TYPES> && is_one_of<B, TYPES>
-void operator*=(A &a, const B &b) {
-    a = a * b;
-}
-
-template <typename A, typename B>
-struct Divide {
-    A a;
-    B b;
-    constexpr Divide(A a, B b): a(a), b(b) {}
-
-    template <typename T>
-    operator T() const {
-        return static_cast<T>(a) / static_cast<T>(b);
-    }
-};
-
-export template <typename A, typename B>
-requires is_one_of<A, TYPES> && is_one_of<B, TYPES>
-Divide<A, B> operator/(const A &a, const B &b) {
-    return Divide<A, B>(a, b);
-}
-
-export template <typename A, typename B>
-requires is_one_of<A, TYPES> && is_one_of<B, TYPES>
-void operator/=(A &a, const B &b) {
-    a = a / b;
-}
 
 template <typename intN_t, unsigned K>
 std::ostream &operator<<(std::ostream &out, const Fixed<intN_t, K> &f) {

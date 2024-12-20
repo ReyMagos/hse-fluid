@@ -19,7 +19,7 @@ add_executable(${PROJECT_NAME} main.cpp fixed.cppm fluid.cppm
 target_include_directories(${PROJECT_NAME} PRIVATE ${LLVM_INCLUDE_DIRS})
 target_sources(${PROJECT_NAME}
         PUBLIC
-        FILE_SET modules TYPE CXX_MODULES FILES fluid.cppm fixed.cppm
+        FILE_SET modules TYPE CXX_MODULES FILES fluid.cppm fixed.cppm lazy_arithmetic.cppm
 )
 
 llvm_map_components_to_libnames(llvm_libs support)
