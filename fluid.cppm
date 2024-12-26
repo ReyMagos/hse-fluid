@@ -75,7 +75,7 @@ namespace fluid {
         pType p[N][M]{}, old_p[N][M];
         pType dirs[N][M]{};
         VectorField<vType, N, M> velocity{};
-        VectorField <vFlowType, N, M> velocity_flow{};
+        VectorField<vFlowType, N, M> velocity_flow{};
         int last_use[N][M]{};
         int UT = 0;
 
@@ -85,10 +85,12 @@ namespace fluid {
             // Apply external forces
             for (size_t x = 0; x < N; ++x) {
                 for (size_t y = 0; y < M; ++y) {
-                    if (field[x][y] == '#')
+                    if (field[x][y] == '#') {
                         continue;
-                    if (field[x + 1][y] != '#')
+                    }
+                    if (field[x + 1][y] != '#') {
                         velocity.add(x, y, 1, 0, g);
+                    }
                 }
             }
 
@@ -106,7 +108,7 @@ namespace fluid {
                             pType force = old_p[x][y] - old_p[nx][ny];
                             vType &contr = velocity.get(nx, ny, -dx, -dy);
 
-                            if (contr * rho[field[nx][ny]] >= force) {
+                            if (static_cast<pType>(contr * rho[field[nx][ny]]) >= force) {
                                 contr -= force / rho[field[nx][ny]];
                                 continue;
                             }
@@ -142,17 +144,22 @@ namespace fluid {
             // Recalculate p with kinetic energy
             for (size_t x = 0; x < N; ++x) {
                 for (size_t y = 0; y < M; ++y) {
-                    if (field[x][y] == '#')
+                    if (field[x][y] == '#') {
                         continue;
+                    }
+
                     for (auto [dx, dy]: deltas) {
                         vType     old_v = velocity.get(x, y, dx, dy);
                         vFlowType new_v = velocity_flow.get(x, y, dx, dy);
                         if (old_v > 0) {
                             assert(new_v <= old_v);
-                            velocity.get(x, y, dx, dy) = new_v;
+
+                            velocity.get(x, y, dx, dy) = static_cast<vType>(new_v);
                             vType force = (old_v - new_v) * rho[field[x][y]];
-                            if (field[x][y] == '.')
+                            if (field[x][y] == '.') {
                                 force *= 0.8;
+                            }
+
                             if (field[x + dx][y + dy] == '#') {
                                 p[x][y] += force / dirs[x][y];
                                 total_delta_p += force / dirs[x][y];
@@ -196,13 +203,14 @@ namespace fluid {
                     }
 
                     // assert(v >= velocity_flow.get(x, y, dx, dy));
-                    auto vp = std::min(lim, static_cast<pType>(cap - flow));
+                    pType vp = std::min(lim, static_cast<pType>(cap - flow));
                     if (last_use[nx][ny] == UT - 1) {
                         velocity_flow.add(x, y, dx, dy, static_cast<vFlowType>(vp));
                         last_use[x][y] = UT;
                         // cerr << x << " " << y << " -> " << nx << " " << ny << " " << vp << " / " << lim << "\n";
                         return {vp, 1, {nx, ny}};
                     }
+
                     auto [t, prop, end] = propagate_flow(nx, ny, vp);
                     ret += t;
                     if (prop) {
@@ -231,6 +239,7 @@ namespace fluid {
                     return;
                 }
             }
+
             last_use[x][y] = UT;
             for (auto [dx, dy]: deltas) {
                 int nx = x + dx, ny = y + dy;
@@ -285,11 +294,13 @@ namespace fluid {
                         tres[i] = sum;
                         continue;
                     }
+
                     vType v = velocity.get(x, y, dx, dy);
                     if (v < 0) {
                         tres[i] = sum;
                         continue;
                     }
+
                     sum += v;
                     tres[i] = sum;
                 }
@@ -308,6 +319,7 @@ namespace fluid {
 
                 ret = (last_use[nx][ny] == UT - 1 || propagate_move(nx, ny, false));
             } while (!ret);
+
             last_use[x][y] = UT;
             for (auto [dx, dy]: deltas) {
                 int nx = x + dx, ny = y + dy;
@@ -315,18 +327,35 @@ namespace fluid {
                     propagate_stop(nx, ny);
                 }
             }
-            if (ret) {
-                if (!is_first) {
-                    swap_with(x, y);
-                    swap_with(nx, ny);
-                    swap_with(x, y);
-                }
+
+            if (ret && !is_first) {
+                swap_with(x, y);
+                swap_with(nx, ny);
+                swap_with(x, y);
             }
+
             return ret;
         }
 
-        vType random01() {
+        static vType random01() {
             return static_cast<vType>(dis01(rnd));
+        }
+    };
+
+    export template <size_t N, size_t M>
+    struct run_simulation {
+        char (&field)[N][M + 1];
+        explicit run_simulation(char (&field)[N][M + 1]): field(field) {}
+
+        template <typename pType, typename vType, typename vFlowType>
+        void operator()() const {
+            std::ofstream file_output;
+            file_output.open("output.txt", std::ios::trunc);
+
+            Simulation<pType, vType, vFlowType, N, M> simulation(field);
+            simulation.render(file_output);
+
+            file_output.close();
         }
     };
 }

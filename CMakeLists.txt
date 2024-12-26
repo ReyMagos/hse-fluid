@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.28)
 project(hse_fluid LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
 
 # Helps CMake find clang-scan-deps which is required
 # to compile C++20 modules
@@ -15,6 +16,9 @@ find_package(LLVM REQUIRED CONFIG)
 
 add_executable(${PROJECT_NAME} main.cpp fixed.cppm fluid.cppm
         llvm_patched/Support/CommandLine.cpp llvm_patched/Support/CommandLine.h)
+
+set(TYPES "FLOAT,FIXED(32,16),DOUBLE")
+target_compile_definitions(${PROJECT_NAME} PUBLIC -DTYPES=${TYPES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${LLVM_INCLUDE_DIRS})
 target_sources(${PROJECT_NAME}

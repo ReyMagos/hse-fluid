@@ -19,8 +19,8 @@ namespace fluid {
     }
 
     export template <typename A, typename B>
-    void operator+=(A &a, const B &b) {
-        a = a + b;
+    A &operator+=(A &a, const B &b) {
+        return a = a + b;
     }
 
     template <typename A, typename B>
@@ -41,8 +41,8 @@ namespace fluid {
     }
 
     export template <typename A, typename B>
-    void operator-=(A &a, const B &b) {
-        a = a - b;
+    A &operator-=(A &a, const B &b) {
+        return a = a - b;
     }
 
     template <typename A, typename B>
@@ -63,8 +63,8 @@ namespace fluid {
     }
 
     export template <typename A, typename B>
-    void operator*=(A &a, const B &b) {
-        a = a * b;
+    A &operator*=(A &a, const B &b) {
+        return a = a * b;
     }
 
     template <typename A, typename B>
@@ -85,7 +85,7 @@ namespace fluid {
     }
 
     export template <typename A, typename B>
-    void operator/=(A &a, const B &b) {
-        a = a / b;
+    A &operator/=(A &a, const B &b) {
+        return a = a / b;
     }
 }
