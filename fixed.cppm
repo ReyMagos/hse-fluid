@@ -1,6 +1,7 @@
 module;
 
 #include <cstdint>
+#include <format>
 #include <ostream>
 
 export module fixed;
@@ -123,20 +124,48 @@ struct fast_int_type<64> {
     using type = int_fast64_t;
 };
 
+export template <typename T>
+struct TypeName {
+    static constexpr std::string as_string() {
+        return typeid(T).name();
+    }
+};
+
+template <>
+struct TypeName<float> {
+    static constexpr std::string as_string() {
+        return "FLOAT";
+    }
+};
+
+template <>
+struct TypeName<double> {
+    static constexpr std::string as_string() {
+        return "DOUBLE";
+    }
+};
 
 // TODO: Awful constructor inheritance
 export template <size_t N, size_t K>
-struct Fixed: FixedImpl<typename int_type<N>::type, K, Fixed<N, K>> {
+struct Fixed: FixedImpl<typename int_type<N>::type, K, Fixed<N, K>>, TypeName<Fixed<N, K>> {
     constexpr Fixed(const int v): FixedImpl<typename int_type<N>::type, K, Fixed>(v) {};
     constexpr Fixed(const float f): FixedImpl<typename int_type<N>::type, K, Fixed>(f) {}
     constexpr Fixed(const double f): FixedImpl<typename int_type<N>::type, K, Fixed>(f) {}
     constexpr Fixed(): FixedImpl<typename int_type<N>::type, K, Fixed>(0) {}
+
+    static constexpr std::string as_string() {
+        return std::format("FIXED({},{})", N, K);
+    }
 };
 
 export template <size_t N, size_t K>
-struct FastFixed: FixedImpl<typename fast_int_type<N>::type, K, FastFixed<N, K>> {
+struct FastFixed: FixedImpl<typename fast_int_type<N>::type, K, FastFixed<N, K>>, TypeName<FastFixed<N, K>> {
     constexpr FastFixed(const int v): FixedImpl<typename fast_int_type<N>::type, K, FastFixed>(v) {};
     constexpr FastFixed(const float f): FixedImpl<typename fast_int_type<N>::type, K, FastFixed>(f) {}
     constexpr FastFixed(const double f): FixedImpl<typename fast_int_type<N>::type, K, FastFixed>(f) {}
     constexpr FastFixed(): FixedImpl<typename fast_int_type<N>::type, K, FastFixed>(0) {}
+
+    static constexpr std::string as_string() {
+        return std::format("FAST_FIXED({},{})", N, K);
+    }
 };

@@ -23,6 +23,7 @@ namespace fluid {
         return a = a + b;
     }
 
+
     template <typename A, typename B>
     struct Subtract {
         A a;
@@ -45,6 +46,7 @@ namespace fluid {
         return a = a - b;
     }
 
+
     template <typename A, typename B>
     struct Multiply {
         A a;
@@ -66,6 +68,7 @@ namespace fluid {
     A &operator*=(A &a, const B &b) {
         return a = a * b;
     }
+
 
     template <typename A, typename B>
     struct Divide {
